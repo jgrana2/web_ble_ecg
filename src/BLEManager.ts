@@ -20,7 +20,7 @@ export class BLEManager{
           this.status = "connected";
           device.gatt.connect().then(gatt_server => {
             this.server = gatt_server;
-            console.log("Connected to server", gatt_server);
+            console.log("Connected!", gatt_server);
             resolve(this.server);
           });
         })

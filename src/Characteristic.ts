@@ -5,6 +5,7 @@ export class Characteristic {
     this.uuid = uuid;
   }
 
+  //Function to handle notifications
   notication_handler(event: any){
     console.log("Notified from", event.target.uuid);
   }

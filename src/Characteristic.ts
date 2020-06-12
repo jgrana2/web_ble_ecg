@@ -9,5 +9,4 @@ export class Characteristic {
   notication_handler(event: any){
     console.log("Notified from", event.target.uuid);
   }
-
 }

@@ -19,6 +19,10 @@ export class BLEManager {
           console.log("Connecting to device...");
           device.gatt.connect().then(gatt_server => {
             this.server = gatt_server;
+
+            //Remove connect button
+            document.getElementById("connect_button").style.display = "none";
+
             console.log("Connected!", gatt_server);
             resolve(this.server);
           });

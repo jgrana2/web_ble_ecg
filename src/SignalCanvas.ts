@@ -1,4 +1,7 @@
-class Signal_canvas {
+import { Container } from "./Container";
+
+export class SignalCanvas {
+  public id: string;
   public height: number;
   public width: number;
   public background_gradient_color: string;
@@ -9,6 +12,8 @@ class Signal_canvas {
   private data = new Int32Array(21); //21 Samples per packet
 
   constructor(
+    container: Container,
+    id: string,
     height: number,
     width: number,
     background_gradient_color: string,
@@ -17,6 +22,7 @@ class Signal_canvas {
     y_cursor: number,
     x_scale: number
   ){
+    this.id = id;
     this.height = height;
     this.width = width;
     this.background_gradient_color = background_gradient_color;
@@ -24,15 +30,38 @@ class Signal_canvas {
     this.x_cursor = x_cursor;
     this.y_cursor = y_cursor;
     this.x_scale = x_scale;
+    
+    let canvas = document.createElement("canvas");
+    canvas.id = id;
+    canvas.height = height;
+
+    //Set height and width
+    if (height === -1) {
+      //Default canvas height
+      canvas.height = 100;
+    } else {
+      canvas.height = height;
+    }
+    if (width === -1) {
+      //Default canvas width equal to half the screen width less half grid gap
+      canvas.width = container.container.offsetWidth/2-parseInt(container.grid_gap, 10)/2; 
+    } else {
+      canvas.width = width;
+    }
+    
+    //Set colors
+    canvas.setAttribute("style", 
+    `background-image:linear-gradient(180deg, ${background_gradient_color} 0%, rgba(0,0,0,0) 100%)`);
+    canvas.style.borderRadius = "30px";
+
+    //Append to container
+    container.container.append(canvas);
+    console.log("Canvas", canvas.id, "created");
   }
 
-  convert_to_24_bits(data: Int32Array) {
+  convert_to_24_bits(data: Int32Array) {}
 
-  }
-
-  resize_to_fit(){
-
-  }
+  resize_to_fit(){}
 
   play(){}
   pause(){}

@@ -54,18 +54,34 @@ function main() {
     let container = new Container("#363537", "10px");
 
     //Create canvas
-    let lead_I_canvas = new SignalCanvas(container, "lead_I", -1, -1, "rgba(12,206,107,0.1)", "#0CCE6B", 0, 0, 2);
-    let lead_II_canvas = new SignalCanvas(container, "lead_II", -1, -1, "rgba(220,237,49,0.1)", "#0CCE6B", 0, 0, 2);
-    let lead_III_canvas = new SignalCanvas(container, "lead_III", -1, -1, "rgba(239,45,86,0.1)", "#0CCE6B", 0, 0, 2);
-    let lead_aVR_canvas = new SignalCanvas(container, "lead_aVR", -1, -1, "rgba(237,125,58,0.1)", "#0CCE6B", 0, 0, 2);
-    let lead_aVL_canvas = new SignalCanvas(container, "lead_aVL", -1, -1, "rgba(202,12,206,0.1)", "#0CCE6B", 0, 0, 2);
-    let lead_aVF_canvas = new SignalCanvas(container, "lead_aVF", -1, -1, "rgba(72,145,255,0.1)", "#0CCE6B", 0, 0, 2);
-    let lead_V1_canvas = new SignalCanvas(container, "lead_V1", -1, -1, "rgba(255,205,107,0.1)", "#0CCE6B", 0, 0, 2);
-    let lead_V2_canvas = new SignalCanvas(container, "lead_V2", -1, -1, "rgba(255,112,215,0.1)", "#0CCE6B", 0, 0, 2);
-    let lead_V3_canvas = new SignalCanvas(container, "lead_V3", -1, -1, "rgba(237,125,58,0.1)", "#0CCE6B", 0, 0, 2);
-    let lead_V4_canvas = new SignalCanvas(container, "lead_V4", -1, -1, "rgba(12,206,107,0.1)", "#0CCE6B", 0, 0, 2);
-    let lead_V5_canvas = new SignalCanvas(container, "lead_V5", -1, -1, "rgba(239,45,86,0.1)", "#0CCE6B", 0, 0, 2);
-    let lead_V6_canvas = new SignalCanvas(container, "lead_V6", -1, -1, "rgba(202,12,206,0.1)", "#0CCE6B", 0, 0, 2);
+    let lead_I_canvas = new SignalCanvas(container, "lead_I", -1, false, "rgba(12,206,107,0.1)", "#0CCE6B", 0, 0, 2);
+    let lead_II_canvas = new SignalCanvas(container, "lead_II", -1, false, "rgba(220,237,49,0.1)", "#0CCE6B", 0, 0, 2);
+    let lead_III_canvas = new SignalCanvas(container, "lead_III", -1, false, "rgba(239,45,86,0.1)", "#0CCE6B", 0, 0, 2);
+    let lead_aVR_canvas = new SignalCanvas(container, "lead_aVR", -1, false, "rgba(237,125,58,0.1)", "#0CCE6B", 0, 0, 2);
+    let lead_aVL_canvas = new SignalCanvas(container, "lead_aVL", -1, false, "rgba(202,12,206,0.1)", "#0CCE6B", 0, 0, 2);
+    let lead_aVF_canvas = new SignalCanvas(container, "lead_aVF", -1, false, "rgba(72,145,255,0.1)", "#0CCE6B", 0, 0, 2);
+    let lead_V1_canvas = new SignalCanvas(container, "lead_V1", -1, false, "rgba(255,205,107,0.1)", "#0CCE6B", 0, 0, 2);
+    let lead_V2_canvas = new SignalCanvas(container, "lead_V2", -1, false, "rgba(255,112,215,0.1)", "#0CCE6B", 0, 0, 2);
+    let lead_V3_canvas = new SignalCanvas(container, "lead_V3", -1, false, "rgba(237,125,58,0.1)", "#0CCE6B", 0, 0, 2);
+    let lead_V4_canvas = new SignalCanvas(container, "lead_V4", -1, false, "rgba(12,206,107,0.1)", "#0CCE6B", 0, 0, 2);
+    let lead_V5_canvas = new SignalCanvas(container, "lead_V5", -1, false, "rgba(239,45,86,0.1)", "#0CCE6B", 0, 0, 2);
+    let lead_V6_canvas = new SignalCanvas(container, "lead_V6", -1, false, "rgba(202,12,206,0.1)", "#0CCE6B", 0, 0, 2);
+    let lead_II_canvas_big = new SignalCanvas(container, "lead_II", -1, true, "rgba(220,237,49,0.1)", "#0CCE6B", 0, 0, 2);
+
+    //Append canvases to container
+    container.append_canvas(lead_I_canvas);
+    container.append_canvas(lead_II_canvas);
+    container.append_canvas(lead_III_canvas);
+    container.append_canvas(lead_aVR_canvas);
+    container.append_canvas(lead_aVL_canvas);
+    container.append_canvas(lead_aVF_canvas);
+    container.append_canvas(lead_V1_canvas);
+    container.append_canvas(lead_V2_canvas);
+    container.append_canvas(lead_V3_canvas);
+    container.append_canvas(lead_V4_canvas);
+    container.append_canvas(lead_V5_canvas);
+    container.append_canvas(lead_V6_canvas);
+    container.append_canvas(lead_II_canvas_big);
 
     //Enable notifications
     ecg_device.ble.start_notifications(ecg_service, channel_1);
@@ -76,6 +92,5 @@ function main() {
     ecg_device.ble.start_notifications(ecg_service, channel_6);
     ecg_device.ble.start_notifications(ecg_service, channel_7);
     ecg_device.ble.start_notifications(ecg_service, channel_8);
-
   });
 }

@@ -15,7 +15,7 @@ document.querySelector("#connect_button").addEventListener("click", () => {
 
 function main() {
   //Welcome
-  console.log("IECG v0.1", new Date().toString()); //Internet ECG v0.1
+  console.log("IECG v0.1"); //Internet ECG v0.1
 
   //ECG Channels
   let channel_1 = new Characteristic(0x8171);

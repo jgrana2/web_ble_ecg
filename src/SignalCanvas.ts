@@ -55,14 +55,14 @@ export class SignalCanvas {
     canvas.style.borderRadius = "30px";
 
     //Append to container
+    // container.add_canvas_to_container(canvas);
+    container.canvases.push(canvas);
     container.container.append(canvas);
+    
     console.log("Canvas", canvas.id, "created");
   }
 
   convert_to_24_bits(data: Int32Array) {}
-
-  resize_to_fit(){}
-
   play(){}
   pause(){}
 }

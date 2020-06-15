@@ -31,7 +31,7 @@ export class SignalCanvas {
     this.x_cursor = x_cursor;
     this.y_cursor = y_cursor;
     this.x_scale = x_scale;
-
+ 
     //Create canvas element
     this.canvas = document.createElement("canvas");
     this.canvas.id = id;

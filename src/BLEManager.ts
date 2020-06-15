@@ -45,7 +45,7 @@ export class BLEManager {
         .then((gatt_characteristic: any) => {
           return gatt_characteristic.startNotifications()
             .then((gatt_characteristic: any) => {
-              gatt_characteristic.addEventListener("characteristicvaluechanged", characteristic.notication_handler);
+              gatt_characteristic.addEventListener("characteristicvaluechanged", (event: Event) => characteristic.notication_handler(event));
               console.log("Notifications started on", gatt_characteristic.uuid);
               resolve(gatt_characteristic);
             });

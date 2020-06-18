@@ -47,21 +47,24 @@ export class SignalCanvas {
     context.strokeStyle = this.line_color;
     context.beginPath();
     context.moveTo(this.x_cursor, this.y_cursor);
+    let i: number = 0;
 
-    let step = (element: number) => {
-      this.y_cursor = element / (Math.pow(2, 24) - 1) * this.height + this.height / 2;
+    let step = () => {
+      this.y_cursor = data[i] / (Math.pow(2, 24) - 1) * this.height + this.height / 2;
       this.x_cursor += this.x_scale;
       if (this.x_cursor > this.canvas.width) {
         this.x_cursor = 0;
         context.moveTo(this.x_cursor, this.y_cursor);
       }
       context.lineTo(this.x_cursor, this.y_cursor);
+      context.stroke();
+      context.clearRect(this.x_cursor, 0, 20, this.height);
+      i++;
+      if (i < data.length) {
+        window.requestAnimationFrame(step);
+      }
     }
 
-    data.forEach(element => {
-      step(element);
-    });
-    context.clearRect(this.x_cursor, 0, 20, this.height);
-    context.stroke();
+    window.requestAnimationFrame(step);
   }
 }

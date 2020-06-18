@@ -1,12 +1,12 @@
 import { SignalCanvas } from "./SignalCanvas";
 
-export class Container{
+export class Container {
   public background_color: string;
   public container: HTMLElement;
   public grid_gap: string;
-  public canvases: Array<SignalCanvas>;
+  public canvases: SignalCanvas[];
 
-  constructor(background_color: string, grid_gap: string){
+  constructor(background_color: string, grid_gap: string) {
     this.background_color = background_color;
     this.grid_gap = grid_gap;
     this.canvases = [];
@@ -24,21 +24,21 @@ export class Container{
   }
 
   //Update canvas size
-  update_canvas_size(canvas: SignalCanvas){
+  update_canvas_size(canvas: SignalCanvas) {
     if (canvas.big === true) {
       //Take all columns
       canvas.canvas.style.gridColumn = "1 / -1";
-      canvas.canvas.width = this.container.clientWidth; 
+      canvas.canvas.width = this.container.clientWidth;
     } else {
       //Default canvas width equal to half the screen width less half grid gap
-      canvas.canvas.width = this.container.clientWidth/2-parseInt(this.grid_gap)/2; 
+      canvas.canvas.width = this.container.clientWidth / 2 - parseInt(this.grid_gap) / 2;
     }
     //Default canvas height
     canvas.canvas.height = 100;
   }
 
   //Append canvas to container
-  append_canvas(canvas: SignalCanvas){
+  append_canvas(canvas: SignalCanvas) {
     this.canvases.push(canvas);
     this.update_canvas_size(canvas);
     this.container.append(canvas.canvas);
@@ -46,7 +46,7 @@ export class Container{
   }
 
   //Adjust canvas size to fit screen when resizing
-  on_resize(){
+  on_resize() {
     window.onresize = () => {
       this.canvases.forEach(canvas => {
         this.update_canvas_size(canvas);

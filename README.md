@@ -27,4 +27,11 @@ Each GATT notification from each channel contains 21 samples of 24 bits, 250 Hz 
 
 ### HOW IT WORKS
 
-When the ECG device is turned on, it's in advertising mode so that the Web Bluetooth API can discover it. Run npm install and open index.html in the dist/ folder. In the web page, click the "Connect" button. Find your device from the list and click "Pair." Once successfully connected, the app will start automatically displaying the live signal of all leads.
+When the ECG device is turned on, it's in advertising mode so that the Web Bluetooth API can discover it. To start watching for changes in the code run
+
+```console
+npm install
+npx webpack --config webpack.config.js
+```
+
+Then open index.html in the dist/ folder. In the web page, click the "Connect" button. Find your device from the list and click "Pair." Once successfully connected, the app will start automatically displaying the live signal of all leads.

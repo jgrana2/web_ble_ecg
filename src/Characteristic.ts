@@ -5,7 +5,7 @@ export class Characteristic {
   public channel_1: number[];
   public channel_2: number[];
 
-  constructor(uuid: number, notification_handler: string) {
+  constructor(uuid: number) {
     this.uuid = uuid;
   }
 }

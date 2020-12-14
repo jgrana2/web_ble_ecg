@@ -1,5 +1,3 @@
-import { Container } from "./Container";
-
 export class SignalCanvas {
   public id: string;
   public height: number;
@@ -13,7 +11,6 @@ export class SignalCanvas {
   public data: number[]; //21 Samples per packet
 
   constructor(
-    container: Container,
     id: string,
     big: boolean,
     background_gradient_color: string,
@@ -49,22 +46,18 @@ export class SignalCanvas {
     context.moveTo(this.x_cursor, this.y_cursor);
     let i: number = 0;
 
-    let step = () => {
-      this.y_cursor = data[i] / (Math.pow(2, 24) - 1) * this.height + this.height / 2;
+    for (i = 0; i < data.length; i++) {
+      this.y_cursor = data[i] / (65535) * this.height + this.height / 2;
       this.x_cursor += this.x_scale;
       if (this.x_cursor > this.canvas.width) {
         this.x_cursor = 0;
         context.moveTo(this.x_cursor, this.y_cursor);
       }
       context.lineTo(this.x_cursor, this.y_cursor);
-      context.stroke();
       context.clearRect(this.x_cursor, 0, 20, this.height);
-      i++;
-      if (i < data.length) {
-        window.requestAnimationFrame(step);
-      }
+    }
+    context.stroke();
     }
 
-    window.requestAnimationFrame(step);
+    // window.requestAnimationFrame(step);
   }
-}

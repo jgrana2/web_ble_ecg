@@ -1,15 +1,18 @@
 import { Service } from "./Service";
 import { Characteristic } from "./Characteristic";
 import { SignalCanvas } from "./SignalCanvas";
+import { Socket } from "./Socket";
 
 export class BLEManager {
   public server: any;
   public service: Service;
   public channel_1: number[];
   public channel_2: number[];
+  public socket: Socket;
 
-  constructor(service: Service) {
+  constructor(service: Service, socket: Socket) {
     this.service = service;
+    this.socket = socket;
     console.log("BLE Manager created");
   }
 
@@ -43,24 +46,20 @@ export class BLEManager {
 
   //Start receiving notifications from the specified characteristic
   start_notifications(characteristic: Characteristic, canvas: SignalCanvas) {
-    let name = characteristic.uuid.toString(16);
     this.server
       .getPrimaryService(this.service.uuid)
       .then((gatt_service: BluetoothRemoteGATTService) => {
         return gatt_service.getCharacteristic(characteristic.uuid);
       })
-      .then((gatt_characteristic: BluetoothRemoteGATTCharacteristic) => {
-        return gatt_characteristic
-          .startNotifications()
-          .then((gatt_characteristic: any) => {
-            characteristic.gatt_characteristic = gatt_characteristic;
-            gatt_characteristic.addEventListener(
-              "characteristicvaluechanged",
-              (event: Event) =>
-                this.notification_handler(event, canvas, characteristic)
-            );
-            console.log("Notifications started on", gatt_characteristic.uuid);
-          });
+      .then(async (gatt_characteristic: BluetoothRemoteGATTCharacteristic) => {
+        const gatt_characteristic_1 = await gatt_characteristic
+          .startNotifications();
+        characteristic.gatt_characteristic = gatt_characteristic_1;
+        gatt_characteristic_1.addEventListener(
+          "characteristicvaluechanged",
+          (event: Event) => this.notification_handler(event, canvas, characteristic)
+        );
+        console.log("Notifications started on", gatt_characteristic_1.uuid);
       })
       .catch((error: any) => {
         console.log(error);
@@ -73,8 +72,7 @@ export class BLEManager {
     canvas: SignalCanvas,
     characteristic: Characteristic
   ) {
-    let gatt_characteristic: BluetoothRemoteGATTCharacteristic = event.target;
-    let data: number[] = this.convert_to_24_bits(event.target.value);
+    let data: number[] = this.convert_to_16bits(event.target.value);
 
     switch (canvas.id) {
       case "lead_III":
@@ -91,6 +89,7 @@ export class BLEManager {
                 }
               }
               canvas.draw_line(data);
+              this.socket.client.emit("lead_III", { uuid: characteristic.uuid, data: data });
             }
             break;
         }
@@ -110,6 +109,7 @@ export class BLEManager {
                 }
               }
               canvas.draw_line(data);
+              this.socket.client.emit("lead_aVR", { uuid: characteristic.uuid, data: data });
             }
             break;
         }
@@ -129,6 +129,7 @@ export class BLEManager {
                 }
               }
               canvas.draw_line(data);
+              this.socket.client.emit("lead_aVL", { uuid: characteristic.uuid, data: data });
             }
             break;
         }
@@ -148,18 +149,25 @@ export class BLEManager {
                 }
               }
               canvas.draw_line(data);
+              this.socket.client.emit("lead_aVF", { uuid: characteristic.uuid, data: data });
             }
             break;
         }
         break;
 
-      default: canvas.draw_line(data);
+      case "lead_II_big":
+        canvas.draw_line(data);
+        this.socket.client.emit("lead_II_big", { uuid: characteristic.uuid, data: data });
+        break;
+
+      default:
+        canvas.draw_line(data);
+        this.socket.client.emit("non_derived_lead", { uuid: characteristic.uuid, data: data });
         break;
     }
   }
 
   convert_to_24_bits(view: DataView): number[] {
-    let result: number;
     let is_negative: number;
     let value: number;
     let data_array_24_bits: number[];
@@ -179,6 +187,14 @@ export class BLEManager {
     }
     // console.log(data_array_24_bits, this.uuid.toString(16));
     return data_array_24_bits;
+  }
+
+  convert_to_16bits(view: DataView): number[] {
+    let data_array_16_bits: number[] = [];
+    for (let index = 0; index < view.byteLength; index = index + Int16Array.BYTES_PER_ELEMENT) {
+      data_array_16_bits.push(view.getInt16(index, true)); //Little endian
+    }
+    return data_array_16_bits;
   }
 
   disconnect() { }

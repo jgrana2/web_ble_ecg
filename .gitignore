@@ -1,0 +1,4 @@
+node_modules/
+.tags
+.tags_swap
+.DS_Store

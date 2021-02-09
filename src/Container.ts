@@ -3,10 +3,12 @@ import { SignalCanvas } from "./SignalCanvas";
 export class Container {
   public background_color: string;
   public container: HTMLElement;
+  public header: HTMLElement;
   public grid_gap: string;
   public canvases: SignalCanvas[];
 
   constructor(background_color: string, grid_gap: string) {
+    //Grid container
     this.background_color = background_color;
     this.grid_gap = grid_gap;
     this.canvases = [];
@@ -20,6 +22,13 @@ export class Container {
     this.container.style.alignContent = "center";
     this.container.style.gridTemplateColumns = "1fr 1fr";
     this.container.style.gridGap = grid_gap;
+
+    //Header
+    this.header = document.createElement("div");
+    this.header.id = "header";
+    this.header.style.height = "80px";
+    this.header.style.gridColumn = "1 / -1";
+    this.container.appendChild(this.header);
     this.on_resize();
   }
 

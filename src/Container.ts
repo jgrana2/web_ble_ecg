@@ -1,9 +1,10 @@
+import { Header } from "./Header";
 import { SignalCanvas } from "./SignalCanvas";
 
 export class Container {
   public background_color: string;
   public container: HTMLElement;
-  public header: HTMLElement;
+  public header: Header;
   public grid_gap: string;
   public canvases: SignalCanvas[];
 
@@ -24,11 +25,8 @@ export class Container {
     this.container.style.gridGap = grid_gap;
 
     //Header
-    this.header = document.createElement("div");
-    this.header.id = "header";
-    this.header.style.height = "80px";
-    this.header.style.gridColumn = "1 / -1";
-    this.container.appendChild(this.header);
+    this.header = new Header();
+    this.container.appendChild(this.header.container);
     this.on_resize();
   }
 

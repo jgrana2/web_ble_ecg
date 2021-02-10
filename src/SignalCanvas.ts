@@ -59,5 +59,10 @@ export class SignalCanvas {
     context.stroke();
     }
 
-    // window.requestAnimationFrame(step);
+    attach_labels() {
+      let context = this.canvas.getContext('2d');
+      context.font = "16px Verdana";
+      context.fillStyle = "white";
+      context.fillText(this.id, 15, 20);
+    }
   }

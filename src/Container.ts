@@ -42,6 +42,8 @@ export class Container {
     }
     //Default canvas height
     canvas.canvas.height = 100;
+    //Attach labels
+    canvas.attach_labels();
   }
 
   //Append canvas to container

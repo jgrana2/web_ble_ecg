@@ -76,8 +76,10 @@ export class BLEManager {
     // console.log(event.target.value);
     let data_view: DataView = event.target.value; //DataView(84)
     let data_array: number[] = []
-    for (let index = 0; index < data_view.byteLength/Int32Array.BYTES_PER_ELEMENT; index++) {
-      data_array[index] = data_view.getInt32(index * Int32Array.BYTES_PER_ELEMENT, true)
+
+    // Convert from 24 bit to 16 bit signed integers
+    for (let index = 0; index < data_view.byteLength/3; index++) {
+      data_array[index] = (data_view.getUint8(index*3)<<24 | data_view.getUint8(index*3+1)<<16 | data_view.getUint8(index*3+2)<<8)>>16;
     }
 
     switch (canvas.id) {
@@ -166,7 +168,7 @@ export class BLEManager {
         this.socket.client.emit("lead_II_big", { uuid: characteristic.uuid, data: data_array });
         break;
 
-      default:
+      default:      
         canvas.draw_line(data_array);
         this.socket.client.emit("non_derived_lead", { uuid: characteristic.uuid, data: data_array });
         break;

@@ -72,24 +72,30 @@ export class BLEManager {
     canvas: SignalCanvas,
     characteristic: Characteristic
   ) {
-    let data: number[] = this.convert_to_16bits(event.target.value);
+    // let data: number[] = this.convert_to_16bits(event.target.value);
+    // console.log(event.target.value);
+    let data_view: DataView = event.target.value; //DataView(84)
+    let data_array: number[] = []
+    for (let index = 0; index < data_view.byteLength/Int32Array.BYTES_PER_ELEMENT; index++) {
+      data_array[index] = data_view.getInt32(index * Int32Array.BYTES_PER_ELEMENT, true)
+    }
 
     switch (canvas.id) {
       case "lead_III":
         switch (characteristic.uuid) {
           case 0x8171:
-            this.channel_1 = data;
+            this.channel_1 = data_array;
             break;
           case 0x8172:
-            this.channel_2 = data;
+            this.channel_2 = data_array;
             if (this.channel_1 != null) {
               for (const key in this.channel_1) {
                 if (this.channel_1.hasOwnProperty(key)) {
-                  data[key] = this.channel_2[key] - this.channel_1[key];
+                  data_array[key] = this.channel_2[key] - this.channel_1[key];
                 }
               }
-              canvas.draw_line(data);
-              this.socket.client.emit("lead_III", { uuid: characteristic.uuid, data: data });
+              canvas.draw_line(data_array);
+              this.socket.client.emit("lead_III", { uuid: characteristic.uuid, data: data_array });
             }
             break;
         }
@@ -98,18 +104,18 @@ export class BLEManager {
       case "lead_aVR":
         switch (characteristic.uuid) {
           case 0x8171:
-            this.channel_1 = data;
+            this.channel_1 = data_array;
             break;
           case 0x8172:
-            this.channel_2 = data;
+            this.channel_2 = data_array;
             if (this.channel_1 != null) {
               for (const key in this.channel_1) {
                 if (this.channel_1.hasOwnProperty(key)) {
-                  data[key] = (this.channel_2[key] - this.channel_1[key]) / 2;
+                  data_array[key] = (this.channel_2[key] - this.channel_1[key]) / 2;
                 }
               }
-              canvas.draw_line(data);
-              this.socket.client.emit("lead_aVR", { uuid: characteristic.uuid, data: data });
+              canvas.draw_line(data_array);
+              this.socket.client.emit("lead_aVR", { uuid: characteristic.uuid, data: data_array });
             }
             break;
         }
@@ -118,18 +124,18 @@ export class BLEManager {
       case "lead_aVL":
         switch (characteristic.uuid) {
           case 0x8171:
-            this.channel_1 = data;
+            this.channel_1 = data_array;
             break;
           case 0x8172:
-            this.channel_2 = data;
+            this.channel_2 = data_array;
             if (this.channel_1 != null) {
               for (const key in this.channel_1) {
                 if (this.channel_1.hasOwnProperty(key)) {
-                  data[key] = this.channel_1[key] - this.channel_2[key] / 2;
+                  data_array[key] = this.channel_1[key] - this.channel_2[key] / 2;
                 }
               }
-              canvas.draw_line(data);
-              this.socket.client.emit("lead_aVL", { uuid: characteristic.uuid, data: data });
+              canvas.draw_line(data_array);
+              this.socket.client.emit("lead_aVL", { uuid: characteristic.uuid, data: data_array });
             }
             break;
         }
@@ -138,68 +144,32 @@ export class BLEManager {
       case "lead_aVF":
         switch (characteristic.uuid) {
           case 0x8171:
-            this.channel_1 = data;
+            this.channel_1 = data_array;
             break;
           case 0x8172:
-            this.channel_2 = data;
+            this.channel_2 = data_array;
             if (this.channel_1 != null) {
               for (const key in this.channel_1) {
                 if (this.channel_1.hasOwnProperty(key)) {
-                  data[key] = this.channel_2[key] - this.channel_1[key] / 2;;
+                  data_array[key] = this.channel_2[key] - this.channel_1[key] / 2;;
                 }
               }
-              canvas.draw_line(data);
-              this.socket.client.emit("lead_aVF", { uuid: characteristic.uuid, data: data });
+              canvas.draw_line(data_array);
+              this.socket.client.emit("lead_aVF", { uuid: characteristic.uuid, data: data_array });
             }
             break;
         }
         break;
 
       case "lead_II_big":
-        canvas.draw_line(data);
-        this.socket.client.emit("lead_II_big", { uuid: characteristic.uuid, data: data });
+        canvas.draw_line(data_array);
+        this.socket.client.emit("lead_II_big", { uuid: characteristic.uuid, data: data_array });
         break;
 
       default:
-        canvas.draw_line(data);
-        this.socket.client.emit("non_derived_lead", { uuid: characteristic.uuid, data: data });
+        canvas.draw_line(data_array);
+        this.socket.client.emit("non_derived_lead", { uuid: characteristic.uuid, data: data_array });
         break;
     }
   }
-
-  convert_to_24_bits(view: DataView): number[] {
-    let is_negative: number;
-    let value: number;
-    let data_array_24_bits: number[];
-    data_array_24_bits = [];
-    for (
-      let index = 0;
-      index < view.byteLength;
-      index = index + Uint32Array.BYTES_PER_ELEMENT
-    ) {
-      value = view.getUint32(index, true);
-      is_negative = value & 0x800000;
-      if (!is_negative) {
-        data_array_24_bits.push(value);
-      } else {
-        data_array_24_bits.push((0xffffff - value + 1) * -1);
-      }
-    }
-    // console.log(data_array_24_bits, this.uuid.toString(16));
-    return data_array_24_bits;
-  }
-
-  convert_to_16bits(view: DataView): number[] {
-    let data_array_16_bits: number[] = [];
-    for (let index = 0; index < view.byteLength; index = index + Int16Array.BYTES_PER_ELEMENT) {
-      data_array_16_bits.push(view.getInt16(index, true)); //Little endian
-    }
-    return data_array_16_bits;
-  }
-
-  disconnect() { }
-
-  on_connect() { }
-
-  on_disconnect() { }
 }

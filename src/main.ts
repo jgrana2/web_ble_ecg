@@ -53,7 +53,7 @@ function main() {
   let ecg_device = new Device("1A", ble);
 
   //Connect to ECG Device
-  // ecg_device.ble.connect().then(() => {
+  ecg_device.ble.connect().then(() => {
 
     //Hide Connect button
     connect_button.style.visibility = "hidden";
@@ -92,22 +92,13 @@ function main() {
     container.append_canvas(lead_II_canvas_big);
 
     //Enable notifications
-    ecg_device.ble.start_notifications(channel_1, lead_I_canvas);
-    ecg_device.ble.start_notifications(channel_2, lead_II_canvas);
-    ecg_device.ble.start_notifications(channel_1, lead_III_canvas);
-    ecg_device.ble.start_notifications(channel_2, lead_III_canvas);
-    ecg_device.ble.start_notifications(channel_1, lead_aVR_canvas);
-    ecg_device.ble.start_notifications(channel_2, lead_aVR_canvas);
-    ecg_device.ble.start_notifications(channel_1, lead_aVL_canvas);
-    ecg_device.ble.start_notifications(channel_2, lead_aVL_canvas);
-    ecg_device.ble.start_notifications(channel_1, lead_aVF_canvas);
-    ecg_device.ble.start_notifications(channel_2, lead_aVF_canvas);
-    ecg_device.ble.start_notifications(channel_3, lead_V1_canvas);
-    ecg_device.ble.start_notifications(channel_4, lead_V2_canvas);
-    ecg_device.ble.start_notifications(channel_5, lead_V3_canvas);
-    ecg_device.ble.start_notifications(channel_6, lead_V4_canvas);
-    ecg_device.ble.start_notifications(channel_7, lead_V5_canvas);
-    ecg_device.ble.start_notifications(channel_8, lead_V6_canvas);
-    ecg_device.ble.start_notifications(channel_2, lead_II_canvas_big);
-  // });
+    ecg_device.ble.start_notifications(channel_1);
+    ecg_device.ble.start_notifications(channel_2);
+    ecg_device.ble.start_notifications(channel_3);
+    ecg_device.ble.start_notifications(channel_4);
+    ecg_device.ble.start_notifications(channel_5);
+    ecg_device.ble.start_notifications(channel_6);
+    ecg_device.ble.start_notifications(channel_7);
+    ecg_device.ble.start_notifications(channel_8);
+  });
 }

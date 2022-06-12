@@ -2,6 +2,7 @@ import { Service } from "./Service";
 import { Characteristic } from "./Characteristic";
 import { SignalCanvas } from "./SignalCanvas";
 import { Socket } from "./Socket";
+import { Container } from "./Container";
 
 export class BLEManager {
   public server: any;
@@ -45,7 +46,7 @@ export class BLEManager {
   }
 
   //Start receiving notifications from the specified characteristic
-  start_notifications(characteristic: Characteristic, canvas: SignalCanvas) {
+  start_notifications(characteristic: Characteristic) {
     this.server
       .getPrimaryService(this.service.uuid)
       .then((gatt_service: BluetoothRemoteGATTService) => {
@@ -57,7 +58,7 @@ export class BLEManager {
         characteristic.gatt_characteristic = gatt_characteristic_1;
         gatt_characteristic_1.addEventListener(
           "characteristicvaluechanged",
-          (event: Event) => this.notification_handler(event, canvas, characteristic)
+          (event: Event) => this.notification_handler(event, characteristic)
         );
         console.log("Notifications started on", gatt_characteristic_1.uuid);
       })
@@ -69,108 +70,121 @@ export class BLEManager {
   //Function to handle notifications
   notification_handler(
     event: any,
-    canvas: SignalCanvas,
     characteristic: Characteristic
   ) {
     // let data: number[] = this.convert_to_16bits(event.target.value);
     // console.log(event.target.value);
     let data_view: DataView = event.target.value; //DataView(84)
-    let data_array: number[] = []
+    let data_array: number[] = [];
+    let canvas: SignalCanvas;
 
     // Convert from 24 bit to 16 bit signed integers
-    for (let index = 0; index < data_view.byteLength/3; index++) {
-      data_array[index] = (data_view.getUint8(index*3)<<24 | data_view.getUint8(index*3+1)<<16 | data_view.getUint8(index*3+2)<<8)>>16;
+    for (let index = 0; index < data_view.byteLength / 3; index++) {
+      data_array[index] = (data_view.getUint8(index * 3) << 24 | data_view.getUint8(index * 3 + 1) << 16 | data_view.getUint8(index * 3 + 2) << 8) >> 8;
     }
 
-    switch (canvas.id) {
-      case "lead_III":
-        switch (characteristic.uuid) {
-          case 0x8171:
-            this.channel_1 = data_array;
-            break;
-          case 0x8172:
-            this.channel_2 = data_array;
-            if (this.channel_1 != null) {
-              for (const key in this.channel_1) {
-                if (this.channel_1.hasOwnProperty(key)) {
-                  data_array[key] = this.channel_2[key] - this.channel_1[key];
-                }
-              }
-              canvas.draw_line(data_array);
-              this.socket.client.emit("lead_III", { uuid: characteristic.uuid, data: data_array });
-            }
-            break;
-        }
-        break;
-
-      case "lead_aVR":
-        switch (characteristic.uuid) {
-          case 0x8171:
-            this.channel_1 = data_array;
-            break;
-          case 0x8172:
-            this.channel_2 = data_array;
-            if (this.channel_1 != null) {
-              for (const key in this.channel_1) {
-                if (this.channel_1.hasOwnProperty(key)) {
-                  data_array[key] = (this.channel_2[key] - this.channel_1[key]) / 2;
-                }
-              }
-              canvas.draw_line(data_array);
-              this.socket.client.emit("lead_aVR", { uuid: characteristic.uuid, data: data_array });
-            }
-            break;
-        }
-        break;
-
-      case "lead_aVL":
-        switch (characteristic.uuid) {
-          case 0x8171:
-            this.channel_1 = data_array;
-            break;
-          case 0x8172:
-            this.channel_2 = data_array;
-            if (this.channel_1 != null) {
-              for (const key in this.channel_1) {
-                if (this.channel_1.hasOwnProperty(key)) {
-                  data_array[key] = this.channel_1[key] - this.channel_2[key] / 2;
-                }
-              }
-              canvas.draw_line(data_array);
-              this.socket.client.emit("lead_aVL", { uuid: characteristic.uuid, data: data_array });
-            }
-            break;
-        }
-        break;
-
-      case "lead_aVF":
-        switch (characteristic.uuid) {
-          case 0x8171:
-            this.channel_1 = data_array;
-            break;
-          case 0x8172:
-            this.channel_2 = data_array;
-            if (this.channel_1 != null) {
-              for (const key in this.channel_1) {
-                if (this.channel_1.hasOwnProperty(key)) {
-                  data_array[key] = this.channel_2[key] - this.channel_1[key] / 2;;
-                }
-              }
-              canvas.draw_line(data_array);
-              this.socket.client.emit("lead_aVF", { uuid: characteristic.uuid, data: data_array });
-            }
-            break;
-        }
-        break;
-
-      case "lead_II_big":
+    switch (characteristic.uuid) {
+      case 0x8171:
+        this.channel_1 = data_array;
+        canvas = Container.canvases.find(canvas => {
+          return canvas.id === "I"
+        })
         canvas.draw_line(data_array);
-        this.socket.client.emit("lead_II_big", { uuid: characteristic.uuid, data: data_array });
         break;
 
-      default:      
+      case 0x8172:
+        this.channel_2 = data_array;
+        canvas = Container.canvases.find(canvas => {
+          return canvas.id === "II"
+        })
         canvas.draw_line(data_array);
-        this.socket.client.emit("non_derived_lead", { uuid: characteristic.uuid, data: data_array });
+
+        // Calculate Lead III
+        for (let i = 0; i < data_array.length; i++) {
+          data_array[i] = this.channel_2[i] - this.channel_1[i]
+        }
+        canvas = Container.canvases.find(canvas => {
+          return canvas.id === "III"
+        })
+        canvas.draw_line(data_array);
+
+        //Calculate Lead aVR
+        for (let i = 0; i < data_array.length; i++) {
+          data_array[i] = -(this.channel_1[i] + this.channel_2[i]) / 2;
+        }
+        canvas = Container.canvases.find(canvas => {
+          return canvas.id === "aVR"
+        })
+        canvas.draw_line(data_array);
+
+        //Calculate Lead aVL
+        for (let i = 0; i < data_array.length; i++) {
+          data_array[i] = this.channel_1[i] - (this.channel_2[i]) / 2;
+        }
+        canvas = Container.canvases.find(canvas => {
+          return canvas.id === "aVL"
+        })
+        canvas.draw_line(data_array);
+
+        //Calculate Lead aVF
+        for (let i = 0; i < data_array.length; i++) {
+          data_array[i] = this.channel_2[i] - (this.channel_2[i]) / 2;
+        }
+        canvas = Container.canvases.find(canvas => {
+          return canvas.id === "aVF"
+        })
+        canvas.draw_line(data_array);
+
+        //Calculate Lead II Large
+        canvas = Container.canvases.find(canvas => {
+          return canvas.id === "II Large"
+        })
+        canvas.draw_line(this.channel_2);
+        break;
+
+      case 0x8173:
+        canvas = Container.canvases.find(canvas => {
+          return canvas.id === "V1"
+        })
+        canvas.draw_line(data_array);
+        break;
+
+      case 0x8174:
+        canvas = Container.canvases.find(canvas => {
+          return canvas.id === "V2"
+        })
+        canvas.draw_line(data_array);
+        break;
+
+      case 0x8175:
+        canvas = Container.canvases.find(canvas => {
+          return canvas.id === "V3"
+        })
+        canvas.draw_line(data_array);
+        break;
+
+      case 0x8176:
+        canvas = Container.canvases.find(canvas => {
+          return canvas.id === "V4"
+        })
+        canvas.draw_line(data_array);
+        break;
+
+      case 0x8177:
+        canvas = Container.canvases.find(canvas => {
+          return canvas.id === "V5"
+        })
+        canvas.draw_line(data_array);
+        break;
+
+      case 0x8178:
+        canvas = Container.canvases.find(canvas => {
+          return canvas.id === "V6"
+        })
+        canvas.draw_line(data_array);
+        break;
+
+      default:
         break;
     }
   }

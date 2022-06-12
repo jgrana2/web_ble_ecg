@@ -6,13 +6,13 @@ export class Container {
   public container: HTMLElement;
   public header: Header;
   public grid_gap: string;
-  public canvases: SignalCanvas[];
+  public static canvases: SignalCanvas[];
 
   constructor(background_color: string, grid_gap: string) {
     //Grid container
     this.background_color = background_color;
     this.grid_gap = grid_gap;
-    this.canvases = [];
+    Container.canvases = [];
     document.body.style.backgroundColor = this.background_color;
     this.container = document.getElementById("grid_container");
     this.container.style.left = "0px";
@@ -48,7 +48,7 @@ export class Container {
 
   //Append canvas to container
   append_canvas(canvas: SignalCanvas) {
-    this.canvases.push(canvas);
+    Container.canvases.push(canvas);
     this.update_canvas_size(canvas);
     this.container.append(canvas.canvas);
     console.log("Canvas", canvas.id, "appended to container")
@@ -57,7 +57,7 @@ export class Container {
   //Adjust canvas size to fit screen when resizing
   on_resize() {
     window.onresize = () => {
-      this.canvases.forEach(canvas => {
+      Container.canvases.forEach(canvas => {
         this.update_canvas_size(canvas);
       });
     }

@@ -76,7 +76,7 @@ export class SignalCanvas {
     // }
 
     for (i = 0; i < data.length; i++) {
-      this.y_cursor = ((this.y[i] / 65535) * this.height) * 400 + 50;
+      this.y_cursor = ((this.y[i] / 16777215) * this.height) * 400 + 50;
       // if (this.canvas.id == "I") {
       //   console.log(this.y_cursor);
       // }

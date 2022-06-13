@@ -81,6 +81,7 @@ export class BLEManager {
     // Convert from 24 bit to 16 bit signed integers
     for (let index = 0; index < data_view.byteLength / 3; index++) {
       data_array[index] = (data_view.getUint8(index * 3) << 24 | data_view.getUint8(index * 3 + 1) << 16 | data_view.getUint8(index * 3 + 2) << 8) >> 8;
+      data_array[index] = -data_array[index];
     }
 
     switch (characteristic.uuid) {

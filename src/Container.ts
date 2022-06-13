@@ -26,7 +26,7 @@ export class Container {
 
     //Header
     this.header = new Header();
-    this.container.appendChild(this.header.container);
+    // this.container.appendChild(this.header.container);
     this.on_resize();
   }
 
@@ -41,7 +41,7 @@ export class Container {
       canvas.canvas.width = this.container.clientWidth / 2 - parseInt(this.grid_gap) / 2;
     }
     //Default canvas height
-    canvas.canvas.height = 100;
+    canvas.canvas.height = 200;
     //Attach labels
     canvas.attach_labels();
   }

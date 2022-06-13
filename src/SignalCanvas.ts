@@ -25,7 +25,7 @@ export class SignalCanvas {
     x_scale: number,
   ) {
     this.id = id;
-    this.height = 100; //Default canvas height
+    this.height = 200; //Default canvas height
     this.big = big;
     this.background_gradient_color = background_gradient_color;
     this.line_color = line_color;
@@ -41,7 +41,7 @@ export class SignalCanvas {
 
     //Set colors
     this.canvas.setAttribute("style", `background-image:linear-gradient(180deg, ${background_gradient_color} 0%, rgba(0,0,0,0) 100%)`);
-    this.canvas.style.borderRadius = "30px";
+    this.canvas.style.borderRadius = "5px";
     console.log("Canvas", this.canvas.id, "created");
   }
 
@@ -160,7 +160,7 @@ export class SignalCanvas {
 
     // Draw line
     for (i = 0; i < data.length; i++) {
-      this.y_cursor = ((this.y_lpf[i] / 16777215) * this.height) * 400 + 50;
+      this.y_cursor = ((this.y_lpf[i] / 16777215) * this.height) * 500 + this.height/2;
       this.x_cursor += this.x_scale;
       if (this.x_cursor > this.canvas.width) {
         this.x_cursor = 0;
@@ -170,12 +170,14 @@ export class SignalCanvas {
       context.clearRect(this.x_cursor, 0, 20, this.height);
     }
     context.stroke();
+    this.attach_labels();
   }
 
   attach_labels() {
     let context = this.canvas.getContext('2d');
+    context.clearRect(15, 2, 70, 30);
     context.font = "16px Verdana";
-    context.fillStyle = "white";
+    context.fillStyle = "black";
     context.fillText(this.id, 15, 20);
   }
 }

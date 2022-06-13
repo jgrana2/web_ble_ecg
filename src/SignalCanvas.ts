@@ -10,8 +10,10 @@ export class SignalCanvas {
   public canvas: HTMLCanvasElement;
   public data: number[]; //21 Samples per packet
   public y: number[] = [];
+  public y_lpf: number[] = [];
   public last_data_previous: number = 0;
   public last_y_previous: number = 0;
+  public shift_array: number[];
 
   constructor(
     id: string,
@@ -30,6 +32,7 @@ export class SignalCanvas {
     this.x_cursor = x_cursor;
     this.y_cursor = y_cursor;
     this.x_scale = x_scale;
+    this.shift_array = new Array(27).fill(0); // 28 samples per BLE packet = n taps
 
     //Create canvas element
     this.canvas = document.createElement("canvas");
@@ -49,10 +52,6 @@ export class SignalCanvas {
     context.moveTo(this.x_cursor, this.y_cursor);
     let i: number = 0;
 
-    // if (this.canvas.id == "I") {
-    // console.log(this.canvas.id);
-    // console.log("raw: " + data);
-
     // Implement DC blocker
     // https://www.dsprelated.com/freebooks/filters/DC_Blocker.html
     for (let i = 0; i < data.length; i++) {
@@ -70,16 +69,55 @@ export class SignalCanvas {
     this.last_data_previous = data[data.length - 1];
     this.last_y_previous = this.y[data.length - 1];
 
-    //   console.log("filtered: " + this.y);
-    //   console.log("last x previous: " + this.last_data_previous);
-    //   console.log("last y previous: " + this.last_y_previous);
-    // }
+    // Low-pass filter coefficients
+    let filter_taps: number[] = [
+      0.000000000000000000,
+      0.000128815969157781,
+      0.000636894704170939,
+      0.001036573640496947,
+      -0.000239017661304998,
+      -0.004980792488131791,
+      -0.012728256285370630,
+      -0.018038289643240831,
+      -0.010575397577670504,
+      0.019798614568518398,
+      0.074766185135383148,
+      0.142018993109152086,
+      0.198145503173270704,
+      0.220060346711137778,
+      0.198145503173270704,
+      0.142018993109152142,
+      0.074766185135383162,
+      0.019798614568518405,
+      -0.010575397577670509,
+      -0.018038289643240845,
+      -0.012728256285370628,
+      -0.004980792488131791,
+      -0.000239017661304999,
+      0.001036573640496949,
+      0.000636894704170938,
+      0.000128815969157781,
+      0.000000000000000000,
+    ];
 
+    // Convolution
+    for (let i = 0; i < this.y.length; i++) {
+      let tmp: number = 0;
+
+      // Shift to the right and remove last item to keep the size
+      this.shift_array.unshift(this.y[i]);
+      this.shift_array.pop();
+
+      // Calculate FIR filter output (y_lpf)
+      for (let j = 0; j < filter_taps.length; j++) { // Assuming n taps = n samples per packet
+        tmp += filter_taps[j] * this.shift_array[j];
+      }
+      this.y_lpf[i] = tmp;
+    }
+
+    // Draw line
     for (i = 0; i < data.length; i++) {
-      this.y_cursor = ((this.y[i] / 16777215) * this.height) * 400 + 50;
-      // if (this.canvas.id == "I") {
-      //   console.log(this.y_cursor);
-      // }
+      this.y_cursor = ((this.y_lpf[i] / 16777215) * this.height) * 400 + 50;
       this.x_cursor += this.x_scale;
       if (this.x_cursor > this.canvas.width) {
         this.x_cursor = 0;

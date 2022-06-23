@@ -47,16 +47,17 @@ export class SignalCanvas {
   }
 
   draw_line(data: number[]) {
+    this.dc_blocker(data);
+    this.low_pass_filter();
+    let parts: number = 1; // # of animation segments
     if (!Socket.sink_mode) {
-      this.dc_blocker(data);
-      this.low_pass_filter();
       BLEManager.socket.client.emit(this.id, this.y_lpf);
+      parts = 4; //Smoother animation when connected locally
     }
 
     let context = this.canvas.getContext('2d');
     context.strokeStyle = this.line_color;
     let i: number = 0;
-    let parts: number = 4; // Has to be multiple of this.y_lpf.length = 28
     let loop = () => {
       this.render(context, i, parts);
       i++;

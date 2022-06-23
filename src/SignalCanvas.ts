@@ -1,3 +1,6 @@
+import { Socket } from "./Socket";
+import { BLEManager } from "./BLEManager";
+
 export class SignalCanvas {
   public id: string;
   public height: number;
@@ -20,8 +23,6 @@ export class SignalCanvas {
     big: boolean,
     background_gradient_color: string,
     line_color: string,
-    x_cursor: number,
-    y_cursor: number,
     x_scale: number,
   ) {
     this.id = id;
@@ -29,8 +30,8 @@ export class SignalCanvas {
     this.big = big;
     this.background_gradient_color = background_gradient_color;
     this.line_color = line_color;
-    this.x_cursor = x_cursor;
-    this.y_cursor = y_cursor;
+    this.x_cursor = 0;
+    this.y_cursor = 0;
     this.x_scale = x_scale;
     this.shift_array = new Array(63).fill(0); //  = n taps
 
@@ -46,37 +47,55 @@ export class SignalCanvas {
   }
 
   draw_line(data: number[]) {
+    if (!Socket.sink_mode) {
+      this.dc_blocker(data);
+      this.low_pass_filter();
+      BLEManager.socket.client.emit(this.id, this.y_lpf);
+    }
+
     let context = this.canvas.getContext('2d');
     context.strokeStyle = this.line_color;
-    context.beginPath();
-    context.moveTo(this.x_cursor, this.y_cursor);
     let i: number = 0;
-
-    // Implement DC blocker
-    // https://www.dsprelated.com/freebooks/filters/DC_Blocker.html
-    for (let i = 0; i < data.length; i++) {
-      if (i == 0) {
-        this.y[i] = data[i] - this.last_data_previous + 0.995 * this.last_y_previous;
-        this.last_data_previous = data[i],
-          this.last_y_previous = this.y[i];
-      } else {
-        this.y[i] = data[i] - data[i - 1] + 0.995 * this.y[i - 1];
-        data[i - 1] = data[i];
-        this.y[i - 1] = this.y[i];
+    let parts: number = 4; // Has to be multiple of this.y_lpf.length = 28
+    let loop = () => {
+      this.render(context, i, parts);
+      i++;
+      if (i < parts) {
+        window.requestAnimationFrame(loop);
       }
     }
-    // Store the last element of x and y
-    this.last_data_previous = data[data.length - 1];
-    this.last_y_previous = this.y[data.length - 1];
+    window.requestAnimationFrame(loop);
+  }
 
-    // Low-pass filter coefficients:
-    // Configuration:
-    // fS = 250  Sampling rate.
-    // fL = 15, bL = 17.5 Cutoff frequency
-    // A = 70[dB] Stopband attenuation
-    // N = 63  # Filter length, must be odd
-    // beta = 6.755  # Kaiser window beta
-    // https://fiiir.com/
+  private render(context: CanvasRenderingContext2D, part: number, parts: number) {
+    context.beginPath();
+    context.moveTo(this.x_cursor, this.y_cursor);
+
+    let len = Math.round(this.y_lpf.length/parts);
+
+    for (let i = part * len; i < len * (part + 1); i++) {
+      this.y_cursor = ((this.y_lpf[i] / 16777215) * this.height) * 500 + this.height / 2;
+      this.x_cursor += this.x_scale;
+      if (this.x_cursor > this.canvas.width) {
+        this.x_cursor = 0;
+        context.moveTo(this.x_cursor, this.y_cursor);
+      }
+      context.lineTo(this.x_cursor, this.y_cursor);
+      context.clearRect(this.x_cursor, 0, 20, this.height);
+    }
+    context.stroke();
+  }
+
+  // Low-pass filter coefficients:
+  // Configuration:
+  // fS = 250  Sampling rate.
+  // fL = 15, bL = 17.5 Cutoff frequency
+  // A = 70[dB] Stopband attenuation
+  // N = 63  # Filter length, must be odd
+  // beta = 6.755  # Kaiser window beta
+  // https://fiiir.com/
+  private low_pass_filter() {
+
     let filter_taps: number[] = [
       -0.000058830428425608,
       -0.000140032945345042,
@@ -157,20 +176,25 @@ export class SignalCanvas {
       }
       this.y_lpf[i] = tmp;
     }
+  }
 
-    // Draw line
-    for (i = 0; i < data.length; i++) {
-      this.y_cursor = ((this.y_lpf[i] / 16777215) * this.height) * 500 + this.height/2;
-      this.x_cursor += this.x_scale;
-      if (this.x_cursor > this.canvas.width) {
-        this.x_cursor = 0;
-        context.moveTo(this.x_cursor, this.y_cursor);
+  // Implement DC blocker
+  // https://www.dsprelated.com/freebooks/filters/DC_Blocker.html
+  private dc_blocker(data: number[]) {
+    for (let i = 0; i < data.length; i++) {
+      if (i == 0) {
+        this.y[i] = data[i] - this.last_data_previous + 0.995 * this.last_y_previous;
+        this.last_data_previous = data[i],
+          this.last_y_previous = this.y[i];
+      } else {
+        this.y[i] = data[i] - data[i - 1] + 0.995 * this.y[i - 1];
+        data[i - 1] = data[i];
+        this.y[i - 1] = this.y[i];
       }
-      context.lineTo(this.x_cursor, this.y_cursor);
-      context.clearRect(this.x_cursor, 0, 20, this.height);
     }
-    context.stroke();
-    this.attach_labels();
+    // Store the last element of x and y
+    this.last_data_previous = data[data.length - 1];
+    this.last_y_previous = this.y[data.length - 1];
   }
 
   attach_labels() {

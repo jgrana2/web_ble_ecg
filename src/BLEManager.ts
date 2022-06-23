@@ -9,11 +9,16 @@ export class BLEManager {
   public service: Service;
   public channel_1: number[];
   public channel_2: number[];
-  public socket: Socket;
+  public static socket: Socket; // Socket.io client
 
-  constructor(service: Service, socket: Socket) {
+  constructor(service: Service, sink_mode: boolean) {
     this.service = service;
-    this.socket = socket;
+    BLEManager.socket = new Socket(sink_mode);
+    if (sink_mode) {
+      console.log("Sink mode");
+    } else {
+      console.log("Source mode"); 
+    }
     console.log("BLE Manager created");
   }
 

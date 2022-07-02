@@ -60,6 +60,7 @@ export class SignalCanvas {
     let i: number = 0;
     let loop = () => {
       this.render(context, i, parts);
+      this.attach_labels();
       i++;
       if (i < parts) {
         window.requestAnimationFrame(loop);

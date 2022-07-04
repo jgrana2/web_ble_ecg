@@ -11,7 +11,7 @@ export class Socket {
   constructor(sink_mode: boolean) {
     Socket.sink_mode = sink_mode;
 
-    this.client = io("http://144.202.5.9:9990", {
+    this.client = io("https://syxsens.com", {
       withCredentials: false
     });
 
